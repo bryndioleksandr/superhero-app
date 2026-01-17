@@ -118,7 +118,7 @@ export const getAllSuperheros = async (req: Request, res: Response) => {
         const limit = parseInt(req.query.limit as string) || 5;
         const skip = (page - 1) * limit;
 
-        const superheroes = await Superhero.find()
+        const superheros = await Superhero.find()
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 });
@@ -126,7 +126,7 @@ export const getAllSuperheros = async (req: Request, res: Response) => {
         const total = await Superhero.countDocuments();
 
         res.status(200).json({
-            superheroes,
+            superheros,
             total,
             page,
             pages: Math.ceil(total / limit)
