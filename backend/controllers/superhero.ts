@@ -2,9 +2,8 @@ import multer from "multer";
 import {v2 as cloudinary} from "cloudinary";
 import dotenv from "dotenv";
 import Superhero from "../models/superhero";
-import mongoose from "mongoose";
-import { Request, Response } from 'express';
-import { UploadApiResponse } from "cloudinary";
+import {Request, Response} from 'express';
+import {UploadApiResponse} from "cloudinary";
 
 
 dotenv.config();
@@ -16,12 +15,12 @@ cloudinary.config({
 });
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({storage});
 
 export const createSuperhero = async (req: Request, res: Response) => {
     try {
         upload.array("images", 5)(req, res, async (err) => {
-            if (err) return res.status(400).json({ message: err.message });
+            if (err) return res.status(400).json({message: err.message});
 
             const superheroData = req.body;
 
@@ -44,9 +43,8 @@ export const createSuperhero = async (req: Request, res: Response) => {
                     });
                     uploadedImages.push(result.secure_url);
                 }
-            }
-            catch (uploadError) {
-                return res.status(500).json({ msg: "error uploading images" });
+            } catch (uploadError) {
+                return res.status(500).json({msg: "error uploading images"});
             }
 
             const newSuperhero = new Superhero({
@@ -59,16 +57,16 @@ export const createSuperhero = async (req: Request, res: Response) => {
         });
     } catch (e) {
         console.error(e);
-        res.status(500).json({ message: "server error" });
+        res.status(500).json({message: "server error"});
     }
 };
 
 export const updateSuperhero = async (req: Request, res: Response) => {
     try {
         upload.array("images", 5)(req, res, async (err) => {
-            if (err) return res.status(400).json({ message: "image upload error" });
+            if (err) return res.status(400).json({message: "image upload error"});
 
-            const { id } = req.params;
+            const {id} = req.params;
             const updates = req.body;
             const files = req.files as Express.Multer.File[];
             const newImages: string[] = [];
@@ -78,7 +76,7 @@ export const updateSuperhero = async (req: Request, res: Response) => {
                     for (const file of files) {
                         const result = await new Promise<UploadApiResponse>((resolve, reject) => {
                             const stream = cloudinary.uploader.upload_stream(
-                                { folder: "superheros" },
+                                {folder: "superheros"},
                                 (error, result) => {
                                     if (error) reject(error);
                                     else resolve(result!);
@@ -89,26 +87,26 @@ export const updateSuperhero = async (req: Request, res: Response) => {
                         newImages.push(result.secure_url);
                     }
                 } catch (uploadError) {
-                    return res.status(500).json({ message: "cloudinary error" });
+                    return res.status(500).json({message: "cloudinary error"});
                 }
             }
 
             const oldSuperhero = await Superhero.findById(id);
-            if (!oldSuperhero) return res.status(404).json({ message: "superhero not found" });
+            if (!oldSuperhero) return res.status(404).json({message: "superhero not found"});
 
             const updatedImages = [...oldSuperhero.images, ...newImages];
 
             const updatedSuperhero = await Superhero.findByIdAndUpdate(
                 id,
-                { ...updates, images: updatedImages },
-                { new: true }
+                {...updates, images: updatedImages},
+                {new: true}
             );
 
             res.status(200).json(updatedSuperhero);
         });
     } catch (e) {
         console.error(e);
-        res.status(500).json({ message: "server error" });
+        res.status(500).json({message: "server error"});
     }
 };
 
@@ -121,7 +119,7 @@ export const getAllSuperheros = async (req: Request, res: Response) => {
         const superheros = await Superhero.find()
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 });
+            .sort({createdAt: -1});
 
         const total = await Superhero.countDocuments();
 
@@ -133,39 +131,61 @@ export const getAllSuperheros = async (req: Request, res: Response) => {
         });
     } catch (e) {
         console.error(e);
-        res.status(500).json({ message: "server error" });
+        res.status(500).json({message: "server error"});
     }
 };
 
 export const getSuperhero = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const {id} = req.params;
         const superhero = await Superhero.findById(id);
 
         if (!superhero) {
-            return res.status(404).json({ message: "superhero not found" });
+            return res.status(404).json({message: "superhero not found"});
         }
 
         res.status(200).json(superhero);
     } catch (e) {
         console.error(e);
-        res.status(500).json({ message: "server error" });
+        res.status(500).json({message: "server error"});
     }
 };
 
 export const deleteSuperhero = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const {id} = req.params;
         const deletedSuperhero = await Superhero.findByIdAndDelete(id);
 
         if (!deletedSuperhero) {
-            return res.status(404).json({ message: "superhero not found" });
+            return res.status(404).json({message: "superhero not found"});
         }
 
-        res.status(200).json({ message: "superhero deleted" });
+        res.status(200).json({message: "superhero deleted"});
     } catch (e) {
         console.error(e);
-        res.status(500).json({ message: "server error" });
+        res.status(500).json({message: "server error"});
     }
 };
 
+export const deleteSingleImage = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { image } = req.query;
+        const superhero = await Superhero.findByIdAndUpdate(
+            id,
+            { $pull: { images: image } },
+            { new: true }
+        );
+        if (!superhero) {
+            return res.status(404).json({ message: "superhero not found" });
+        }
+        return res.json({
+            message: "image deleted",
+            images: superhero.images
+        });
+
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ message: "Server error" });
+    }
+}

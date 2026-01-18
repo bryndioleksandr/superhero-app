@@ -13,6 +13,7 @@ export interface ISuperhero {
 
 interface SuperheroState {
     items: ISuperhero[];
+    selectedHero: ISuperhero | null;
     totalDocs: number;
     totalPages: number;
     currentPage: number;
@@ -22,6 +23,7 @@ interface SuperheroState {
 
 const initialState: SuperheroState = {
     items: [],
+    selectedHero: null,
     totalDocs: 0,
     totalPages: 0,
     currentPage: 1,
@@ -31,16 +33,32 @@ const initialState: SuperheroState = {
 
 export const fetchSuperheros = createAsyncThunk("superheros/fetchSuperheros", async (page: number = 1, {rejectWithValue}) => {
     try {
-        const res = await api.get(`/superheros/all?page=${page}`);
+        const res = await api.get(`/superheros/all?page=${page}&limit=5`);
         return res.data;
     } catch (error: any) {
         return rejectWithValue(error.response?.data);
     }
 });
 
-export const createSuperhero = createAsyncThunk("superheros/createSuperhero", async (newHero: FormData, {rejectWithValue, dispatch}) => {
+export const fetchSingleSuperhero = createAsyncThunk("superheros/fetchSingleSuperhero", async (id: string, {rejectWithValue}) => {
     try {
-        const res = await api.post(`/superheros/createSuperhero`, newHero);
+        const res = await api.get(`/superheros/${id}`);
+        return res.data;
+    } catch (error: any) {
+        return rejectWithValue(error.response?.data);
+    }
+});
+
+export const createSuperhero = createAsyncThunk("superheros/createSuperhero", async (newHero: FormData, {
+    rejectWithValue,
+    dispatch
+}) => {
+    try {
+        const res = await api.post(`/superheros/`, newHero, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         dispatch(fetchSuperheros(1));
         return res.data;
     } catch (error: any) {
@@ -50,7 +68,7 @@ export const createSuperhero = createAsyncThunk("superheros/createSuperhero", as
 
 export const deleteSuperhero = createAsyncThunk(
     "superheros/deleteSuperhero",
-    async (id: string, { rejectWithValue }) => {
+    async (id: string, {rejectWithValue}) => {
         try {
             await api.delete(`/superheros/${id}`);
             return id;
@@ -60,11 +78,32 @@ export const deleteSuperhero = createAsyncThunk(
     }
 );
 
+export const deleteSingleImage = createAsyncThunk("superheros/deleteSingleImage",
+    async ({id, image}: { id: string; image: string }, {rejectWithValue}) => {
+        try {
+             const res = await api.delete(`/superheros/${id}/image`, {
+                 params:{
+                     image: image
+                 }
+             });
+            return { id, images: res.data.images };
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+
 export const updateSuperhero = createAsyncThunk(
     "superheros/updateSuperhero",
-    async ({ id, data }: { id: string; data: FormData }, { rejectWithValue }) => {
+    async ({id, data}: { id: string; data: FormData }, {rejectWithValue, dispatch}) => {
         try {
-            const res = await api.put(`/superheros/${id}`, data);
+            const res = await api.put(`/superheros/${id}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            dispatch(fetchSuperheros(1));
             return res.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data);
@@ -84,9 +123,22 @@ const superheroSlice = createSlice({
             })
             .addCase(fetchSuperheros.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.items = action.payload.docs;
-                state.totalDocs = action.payload.totalDocs;
-                state.totalPages = action.payload.totalPages;
+                state.items = action.payload.superheros;
+                state.totalDocs = action.payload.total;
+                state.totalPages = action.payload.pages;
+                state.currentPage = action.payload.page;
+            })
+            .addCase(fetchSingleSuperhero.pending, (state) => {
+                state.status = 'loading';
+                state.error = null;
+            })
+            .addCase(fetchSingleSuperhero.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.selectedHero = action.payload;
+            })
+            .addCase(fetchSingleSuperhero.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload as string;
             })
             .addCase(fetchSuperheros.rejected, (state, action) => {
                 state.status = 'failed';
@@ -98,8 +150,17 @@ const superheroSlice = createSlice({
             .addCase(deleteSuperhero.fulfilled, (state, action) => {
                 state.items = state.items.filter(item => item._id !== action.payload);
                 state.totalDocs -= 1;
+                if (state.selectedHero?._id === action.payload) {
+                    state.selectedHero = null;
+                }
+            })
+            .addCase(deleteSingleImage.fulfilled, (state, action) => {
+                const { id, images } = action.payload;
+                const hero = state.items.find(item => item._id === id);
+                if(hero)  hero.images = images;
             })
             .addCase(updateSuperhero.fulfilled, (state, action) => {
+                state.selectedHero = action.payload;
                 const index = state.items.findIndex(item => item._id === action.payload._id);
                 if (index !== -1) {
                     state.items[index] = action.payload;

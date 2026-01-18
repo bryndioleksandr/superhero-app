@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-    createSuperhero,
+    createSuperhero, deleteSingleImage,
     deleteSuperhero,
     getAllSuperheros,
     getSuperhero,
@@ -14,6 +14,6 @@ superheroRouter.put("/:id", updateSuperhero);
 superheroRouter.get("/all", getAllSuperheros);
 superheroRouter.get("/:id", getSuperhero);
 superheroRouter.delete("/:id", deleteSuperhero);
-
+superheroRouter.delete("/:id/image", deleteSingleImage);
 
 export default superheroRouter;

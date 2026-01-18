@@ -6,7 +6,10 @@ const store = configureStore({
     reducer: rootReducer,
 });
 
-export const useDispatch = useDispatchRedux();
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+export const useDispatch = () => useDispatchRedux<AppDispatch>();
 export const useSelector = useSelectorRedux;
 
 export default store;
