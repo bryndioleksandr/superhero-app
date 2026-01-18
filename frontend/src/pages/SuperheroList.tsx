@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSuperheros } from '@/redux/slices/superhero';
+import { fetchSuperheroes } from '@/redux/slices/superhero';
 import type {AppDispatch, RootState} from '@/redux/store';
 import SuperheroCard from '@/components/SuperheroCard';
 import { Button } from '@/components/ui/button';
@@ -11,15 +11,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SuperheroList() {
   const dispatch = useDispatch<AppDispatch>();
-  const { items, totalPages, currentPage, status } = useSelector((state: RootState) => state.superheros);
+  const { items, totalPages, currentPage, status } = useSelector((state: RootState) => state.superheroes);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchSuperheros(1));
+    dispatch(fetchSuperheroes(1));
   }, [dispatch]);
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchSuperheros(page));
+    dispatch(fetchSuperheroes(page));
   };
 
   return (

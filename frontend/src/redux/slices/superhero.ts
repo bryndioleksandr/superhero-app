@@ -31,35 +31,35 @@ const initialState: SuperheroState = {
     error: null,
 }
 
-export const fetchSuperheros = createAsyncThunk("superheros/fetchSuperheros", async (page: number = 1, {rejectWithValue}) => {
+export const fetchSuperheroes = createAsyncThunk("superheroes/fetchSuperheroes", async (page: number = 1, {rejectWithValue}) => {
     try {
-        const res = await api.get(`/superheros/all?page=${page}&limit=5`);
+        const res = await api.get(`/superheroes/all?page=${page}&limit=5`);
         return res.data;
     } catch (error: any) {
         return rejectWithValue(error.response?.data);
     }
 });
 
-export const fetchSingleSuperhero = createAsyncThunk("superheros/fetchSingleSuperhero", async (id: string, {rejectWithValue}) => {
+export const fetchSingleSuperhero = createAsyncThunk("superheroes/fetchSingleSuperhero", async (id: string, {rejectWithValue}) => {
     try {
-        const res = await api.get(`/superheros/${id}`);
+        const res = await api.get(`/superheroes/${id}`);
         return res.data;
     } catch (error: any) {
         return rejectWithValue(error.response?.data);
     }
 });
 
-export const createSuperhero = createAsyncThunk("superheros/createSuperhero", async (newHero: FormData, {
+export const createSuperhero = createAsyncThunk("superheroes/createSuperhero", async (newHero: FormData, {
     rejectWithValue,
     dispatch
 }) => {
     try {
-        const res = await api.post(`/superheros/`, newHero, {
+        const res = await api.post(`/superheroes/`, newHero, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         });
-        dispatch(fetchSuperheros(1));
+        dispatch(fetchSuperheroes(1));
         return res.data;
     } catch (error: any) {
         return rejectWithValue(error.response?.data);
@@ -67,10 +67,10 @@ export const createSuperhero = createAsyncThunk("superheros/createSuperhero", as
 });
 
 export const deleteSuperhero = createAsyncThunk(
-    "superheros/deleteSuperhero",
+    "superheroes/deleteSuperhero",
     async (id: string, {rejectWithValue}) => {
         try {
-            await api.delete(`/superheros/${id}`);
+            await api.delete(`/superheroes/${id}`);
             return id;
         } catch (error: any) {
             return rejectWithValue(error.response?.data);
@@ -78,10 +78,10 @@ export const deleteSuperhero = createAsyncThunk(
     }
 );
 
-export const deleteSingleImage = createAsyncThunk("superheros/deleteSingleImage",
+export const deleteSingleImage = createAsyncThunk("superheroes/deleteSingleImage",
     async ({id, image}: { id: string; image: string }, {rejectWithValue}) => {
         try {
-             const res = await api.delete(`/superheros/${id}/image`, {
+             const res = await api.delete(`/superheroes/${id}/image`, {
                  params:{
                      image: image
                  }
@@ -95,15 +95,15 @@ export const deleteSingleImage = createAsyncThunk("superheros/deleteSingleImage"
 
 
 export const updateSuperhero = createAsyncThunk(
-    "superheros/updateSuperhero",
+    "superheroes/updateSuperhero",
     async ({id, data}: { id: string; data: FormData }, {rejectWithValue, dispatch}) => {
         try {
-            const res = await api.put(`/superheros/${id}`, data, {
+            const res = await api.put(`/superheroes/${id}`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            dispatch(fetchSuperheros(1));
+            dispatch(fetchSuperheroes(1));
             return res.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data);
@@ -117,13 +117,13 @@ const superheroSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(fetchSuperheros.pending, (state) => {
+            .addCase(fetchSuperheroes.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
-            .addCase(fetchSuperheros.fulfilled, (state, action) => {
+            .addCase(fetchSuperheroes.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.items = action.payload.superheros;
+                state.items = action.payload.superheroes;
                 state.totalDocs = action.payload.total;
                 state.totalPages = action.payload.pages;
                 state.currentPage = action.payload.page;
@@ -140,7 +140,7 @@ const superheroSlice = createSlice({
                 state.status = 'failed';
                 state.error = action.payload as string;
             })
-            .addCase(fetchSuperheros.rejected, (state, action) => {
+            .addCase(fetchSuperheroes.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload as string;
             })

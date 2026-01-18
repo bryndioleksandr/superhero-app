@@ -32,7 +32,7 @@ export const createSuperhero = async (req: Request, res: Response) => {
                 for (const file of files) {
                     const result = await new Promise<UploadApiResponse>(async (resolve, reject) => {
                         const stream = cloudinary.uploader.upload_stream(
-                            {folder: "superheros"},
+                            {folder: "superheroes"},
                             (error, result) => {
                                 if (error) return reject(error);
                                 if (!result) return reject(new Error("No result from Cloudinary"));
@@ -76,7 +76,7 @@ export const updateSuperhero = async (req: Request, res: Response) => {
                     for (const file of files) {
                         const result = await new Promise<UploadApiResponse>((resolve, reject) => {
                             const stream = cloudinary.uploader.upload_stream(
-                                {folder: "superheros"},
+                                {folder: "superheroes"},
                                 (error, result) => {
                                     if (error) reject(error);
                                     else resolve(result!);
@@ -110,13 +110,13 @@ export const updateSuperhero = async (req: Request, res: Response) => {
     }
 };
 
-export const getAllSuperheros = async (req: Request, res: Response) => {
+export const getAllSuperheroes = async (req: Request, res: Response) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 5;
         const skip = (page - 1) * limit;
 
-        const superheros = await Superhero.find()
+        const superheroes = await Superhero.find()
             .skip(skip)
             .limit(limit)
             .sort({createdAt: -1});
@@ -124,7 +124,7 @@ export const getAllSuperheros = async (req: Request, res: Response) => {
         const total = await Superhero.countDocuments();
 
         res.status(200).json({
-            superheros,
+            superheroes,
             total,
             page,
             pages: Math.ceil(total / limit)

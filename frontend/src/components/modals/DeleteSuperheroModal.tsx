@@ -1,5 +1,5 @@
 import { useDispatch } from '@/redux/store';
-import { deleteSuperhero, fetchSuperheros } from '@/redux/slices/superhero';
+import { deleteSuperhero, fetchSuperheroes } from '@/redux/slices/superhero';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertDialog,
@@ -34,7 +34,7 @@ export default function DeleteSuperheroModal({
     setIsDeleting(true);
     try {
       await dispatch(deleteSuperhero(heroId)).unwrap();
-      dispatch(fetchSuperheros(1));
+      dispatch(fetchSuperheroes(1));
       onOpenChange(false);
       navigate('/');
     } catch (error) {

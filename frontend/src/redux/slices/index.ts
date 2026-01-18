@@ -2,7 +2,7 @@ import {combineReducers} from '@reduxjs/toolkit';
 import superheroReducer from "./superhero.ts"
 
 const index = combineReducers({
-    superheros: superheroReducer
+    superheroes: superheroReducer
 });
 
 export default index;

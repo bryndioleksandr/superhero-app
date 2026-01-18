@@ -18,7 +18,7 @@ export default function SuperheroDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const { selectedHero, status } = useSelector((state: RootState) => state.superheros);
+  const { selectedHero, status } = useSelector((state: RootState) => state.superheroes);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 

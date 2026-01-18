@@ -3,6 +3,6 @@ import superheroRouter from "./superhero";
 
 const router = express.Router();
 
-router.use("/superheros", superheroRouter);
+router.use("/superheroes", superheroRouter);
 
 export default router;
